@@ -5,11 +5,14 @@ public class SimpleMatrixMultiplying implements MatrixMultiplying {
     @Override
     public int[][] multiply(int[][] firstMatr, int[][] secondMatr) {
         int[][] newMatr = new int[firstMatr.length][secondMatr[0].length];
+        int rows =firstMatr.length;
+        int cols = secondMatr[0].length;
+        int sameRowCols =firstMatr[0].length;
 
-        for (int i = 0; i < firstMatr.length; i++) {
-            for (int j = 0; j < secondMatr.length; j++) {
-                for (int k = 0; k < firstMatr[0].length; k++)
-                    newMatr[i][j] += firstMatr[i][k] * secondMatr[k][j];
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                for (int sameRowCol = 0; sameRowCol < sameRowCols; sameRowCol++)
+                    newMatr[row][col] += firstMatr[row][sameRowCol] * secondMatr[sameRowCol][col];
             }
         }
         return newMatr;
