@@ -16,12 +16,13 @@ public class StripedBlockThread extends Thread {
 
     @Override
     public void run() {
+        int iterNum = secondMatr[0].length;
         int columnNum = firstMatrRow.length;
 
-        for (int currIter = 0; currIter < columnNum; currIter++) {
+        for (int currIter = 0; currIter < iterNum; currIter++) {
             int currSecondMatrCol = subTaskNum - currIter;
             if (currSecondMatrCol < 0)
-                currSecondMatrCol = columnNum - currSecondMatrCol;
+                currSecondMatrCol = iterNum - (-currSecondMatrCol);
 
             for (int currCol = 0; currCol < columnNum; currCol++)
                 resultMatr[subTaskNum][currSecondMatrCol] += firstMatrRow[currCol] * secondMatr[currCol][currSecondMatrCol];
