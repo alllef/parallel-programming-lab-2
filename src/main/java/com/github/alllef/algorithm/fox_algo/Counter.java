@@ -16,7 +16,7 @@ public class Counter {
         }
     }
 
-    public synchronized void isToContinueIter() {
+    public synchronized void waitUntilIterEnd() {
         if (counter < maxCount) {
             try {
                 wait();

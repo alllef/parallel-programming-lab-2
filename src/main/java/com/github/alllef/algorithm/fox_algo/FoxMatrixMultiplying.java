@@ -36,7 +36,7 @@ public class FoxMatrixMultiplying implements MatrixMultiplying {
                 foxProcess.setMatrices(firstPartitionMatr, secondPartitionMatr);
             }
 
-            counter.isToContinueIter();
+            counter.waitUntilIterEnd();
 
             for (FoxProcess process : processes)
                 copyPartitionMatr(resultMatr, process.getResultMatr(), process.getRow(), process.getCol());
