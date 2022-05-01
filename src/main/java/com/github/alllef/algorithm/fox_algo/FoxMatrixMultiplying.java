@@ -10,8 +10,11 @@ public class FoxMatrixMultiplying implements MatrixMultiplying {
     @Override
     public int[][] multiply(int[][] firstMatr, int[][] secondMatr) {
         int[][] resultMatr = new int[firstMatr.length][secondMatr[0].length];
-        int partitionSize = 4;
-        int iterNum = (int) Math.sqrt(partitionSize);
+        int processesNum = 4;
+        int matrSize = firstMatr.length;
+        int iterNum = (int) Math.sqrt(processesNum);
+        int subMatrSize = matrSize/iterNum;
+
         List<FoxThread> threads = new ArrayList<>();
 
         for (int i = 0; i < iterNum; i++) {
@@ -26,10 +29,11 @@ public class FoxMatrixMultiplying implements MatrixMultiplying {
             for (int thread = 0; thread < threads.size(); thread++) {
                 FoxThread foxThread = threads.get(thread);
                 int k = (foxThread.getRow() + 1) % iterNum;
-                int[][] firstPartitionMatr = getPartitionMatr(firstMatr, foxThread.getRow(), k, partitionSize);
-                int[][] secondPartitionMatr = getPartitionMatr(secondMatr, k, foxThread.getCol(), partitionSize);
+                int[][] firstPartitionMatr = getPartitionMatr(firstMatr, foxThread.getRow(), k, subMatrSize);
+                int[][] secondPartitionMatr = getPartitionMatr(secondMatr, k, foxThread.getCol(), subMatrSize);
                 foxThread.setMatrices(firstPartitionMatr, secondPartitionMatr);
             }
+
             while (!isEnded(threads)) {
                 try {
                     wait();
@@ -64,10 +68,10 @@ public class FoxMatrixMultiplying implements MatrixMultiplying {
     }
 
     private void copyPartitionMatr(int[][] resultMatr, int[][] partitionMatr, int partRow, int partCol) {
-        int partitionSize = partitionMatr.length;
-        for (int row = 0; row < partitionSize; row++) {
-            for (int col = 0; col < partitionSize; col++) {
-                resultMatr[partRow * partitionSize + row][partCol * partitionSize + col] += partitionMatr[row][col];
+        int subMatrSize = partitionMatr.length;
+        for (int row = 0; row < subMatrSize; row++) {
+            for (int col = 0; col < subMatrSize; col++) {
+                resultMatr[partRow * subMatrSize + row][partCol * subMatrSize + col] += partitionMatr[row][col];
             }
         }
     }
