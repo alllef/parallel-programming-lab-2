@@ -6,26 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FoxMatrixMultiplying implements MatrixMultiplying {
+    private final int processesNum;
+
+    public FoxMatrixMultiplying(int processesNum) {
+        this.processesNum = processesNum;
+    }
 
     @Override
     public synchronized int[][] multiply(int[][] firstMatr, int[][] secondMatr) {
         int[][] resultMatr = new int[firstMatr.length][secondMatr[0].length];
-        int processesNum = 4;
         int matrSize = firstMatr.length;
         int iterNum = (int) Math.sqrt(processesNum);
         int subMatrSize = matrSize / iterNum;
         Counter counter = new Counter(processesNum);
 
-        List<FoxProcess> processes = new ArrayList<>();
-
-        for (int i = 0; i < iterNum; i++) {
-            for (int j = 0; j < iterNum; j++) {
-                FoxProcess process = new FoxProcess(iterNum, i, j, counter);
-                Thread thread = new Thread(process);
-                thread.start();
-                processes.add(process);
-            }
-        }
+        List<FoxProcess> processes = startAndGetProcesses(iterNum,counter);
 
         for (int iter = 0; iter < iterNum; iter++) {
             for (int process = 0; process < processes.size(); process++) {
@@ -43,6 +38,19 @@ public class FoxMatrixMultiplying implements MatrixMultiplying {
         }
 
         return resultMatr;
+    }
+
+    private List<FoxProcess> startAndGetProcesses(int iterNum, Counter counter) {
+        List<FoxProcess> processes = new ArrayList<>();
+        for (int i = 0; i < iterNum; i++) {
+            for (int j = 0; j < iterNum; j++) {
+                FoxProcess process = new FoxProcess(iterNum, i, j, counter);
+                Thread thread = new Thread(process);
+                thread.start();
+                processes.add(process);
+            }
+        }
+        return processes;
     }
 
     private int[][] getPartitionMatr(int[][] originMatr, int partRow, int partCol, int partitionSize) {

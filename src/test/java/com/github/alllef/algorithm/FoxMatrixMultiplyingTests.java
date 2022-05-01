@@ -14,7 +14,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 public class FoxMatrixMultiplyingTests extends MatrixMultiplyingTests {
     @Override
     protected MatrixMultiplying getMatrixMultiplying() {
-        return new FoxMatrixMultiplying();
+        return new FoxMatrixMultiplying(4);
     }
 
     @Override
