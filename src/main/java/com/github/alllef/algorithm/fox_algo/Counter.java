@@ -15,4 +15,18 @@ public class Counter {
             notifyAll();
         }
     }
+
+    public synchronized void isToContinueIter() {
+        if (counter < maxCount) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public synchronized int getCounter() {
+        return counter;
+    }
 }

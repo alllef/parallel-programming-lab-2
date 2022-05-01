@@ -3,7 +3,7 @@ package com.github.alllef.algorithm.fox_algo;
 import com.github.alllef.algorithm.MatrixMultiplying;
 import com.github.alllef.algorithm.SimpleMatrixMultiplying;
 
-public class FoxIter implements Runnable {
+public class FoxProcess implements Runnable {
     private final int row;
     private final int col;
     private int[][] firstMatr;
@@ -14,7 +14,7 @@ public class FoxIter implements Runnable {
     private final Counter counter;
     private MatrixMultiplying simpleMatrixMultiplying = new SimpleMatrixMultiplying();
 
-    public FoxIter(int iterNum, int row, int col, Counter counter) {
+    public FoxProcess(int iterNum, int row, int col, Counter counter) {
         super();
         this.iterNum = iterNum;
         this.row = row;
@@ -28,7 +28,7 @@ public class FoxIter implements Runnable {
             calcMatrices();
     }
 
-    private void calcMatrices() {
+    private synchronized void calcMatrices() {
         while (isIterEnd) {
             try {
                 wait();
@@ -42,7 +42,7 @@ public class FoxIter implements Runnable {
         isIterEnd = true;
     }
 
-    public void setMatrices(int[][] firstMatr, int[][] secondMatr) {
+    public synchronized void setMatrices(int[][] firstMatr, int[][] secondMatr) {
         this.firstMatr = firstMatr;
         this.secondMatr = secondMatr;
         isIterEnd = false;

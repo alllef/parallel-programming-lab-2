@@ -8,52 +8,41 @@ import java.util.List;
 public class FoxMatrixMultiplying implements MatrixMultiplying {
 
     @Override
-    public int[][] multiply(int[][] firstMatr, int[][] secondMatr) {
+    public synchronized int[][] multiply(int[][] firstMatr, int[][] secondMatr) {
         int[][] resultMatr = new int[firstMatr.length][secondMatr[0].length];
         int processesNum = 4;
         int matrSize = firstMatr.length;
         int iterNum = (int) Math.sqrt(processesNum);
-        int subMatrSize = matrSize/iterNum;
+        int subMatrSize = matrSize / iterNum;
+        Counter counter = new Counter(processesNum);
 
-        List<FoxThread> threads = new ArrayList<>();
+        List<FoxProcess> processes = new ArrayList<>();
 
         for (int i = 0; i < iterNum; i++) {
             for (int j = 0; j < iterNum; j++) {
-                FoxThread thread = new FoxThread(iterNum, i, j);
+                FoxProcess process = new FoxProcess(iterNum, i, j, counter);
+                Thread thread = new Thread(process);
                 thread.start();
-                threads.add(thread);
+                processes.add(process);
             }
         }
 
         for (int iter = 0; iter < iterNum; iter++) {
-            for (int thread = 0; thread < threads.size(); thread++) {
-                FoxThread foxThread = threads.get(thread);
-                int k = (foxThread.getRow() + 1) % iterNum;
-                int[][] firstPartitionMatr = getPartitionMatr(firstMatr, foxThread.getRow(), k, subMatrSize);
-                int[][] secondPartitionMatr = getPartitionMatr(secondMatr, k, foxThread.getCol(), subMatrSize);
-                foxThread.setMatrices(firstPartitionMatr, secondPartitionMatr);
+            for (int process = 0; process < processes.size(); process++) {
+                FoxProcess foxProcess = processes.get(process);
+                int k = (foxProcess.getRow() + iter) % iterNum;
+                int[][] firstPartitionMatr = getPartitionMatr(firstMatr, foxProcess.getRow(), k, subMatrSize);
+                int[][] secondPartitionMatr = getPartitionMatr(secondMatr, k, foxProcess.getCol(), subMatrSize);
+                foxProcess.setMatrices(firstPartitionMatr, secondPartitionMatr);
             }
 
-            while (!isEnded(threads)) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            counter.isToContinueIter();
 
-            for (FoxThread thread : threads)
-                copyPartitionMatr(resultMatr, thread.getResultMatr(), thread.getRow(), thread.getCol());
+            for (FoxProcess process : processes)
+                copyPartitionMatr(resultMatr, process.getResultMatr(), process.getRow(), process.getCol());
         }
 
         return resultMatr;
-    }
-
-    private boolean isEnded(List<FoxThread> threads) {
-        for (FoxThread thread : threads)
-            if (!thread.isIterEnd()) return false;
-
-        return true;
     }
 
     private int[][] getPartitionMatr(int[][] originMatr, int partRow, int partCol, int partitionSize) {

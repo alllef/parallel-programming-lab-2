@@ -5,7 +5,7 @@ import com.github.alllef.algorithm.MatrixMultiplying;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StripedBlockMatrixMultiplying implements MatrixMultiplying {
+public class StripedBLockMatrixMultiplying implements MatrixMultiplying {
 
     @Override
     public int[][] multiply(int[][] firstMatr, int[][] secondMatr) {
