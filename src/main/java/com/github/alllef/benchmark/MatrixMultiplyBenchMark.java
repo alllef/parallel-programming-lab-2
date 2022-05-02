@@ -1,31 +1,53 @@
 package com.github.alllef.benchmark;
 
-import au.com.bytecode.opencsv.CSVWriter;
-import au.com.bytecode.opencsv.bean.ColumnPositionMappingStrategy;
-import au.com.bytecode.opencsv.bean.CsvToBean;
-import com.github.alllef.algorithm.MatrixMultiplying;
 import com.github.alllef.algorithm.fox_algo.FoxMatrixMultiplying;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 
 public class MatrixMultiplyBenchMark {
-    private static List<Integer> threadsNum = List.of(2, 4, 8, 16);
+    private static List<Integer> threadsNum = List.of(4, 16);
     private static List<Integer> matrixSizes = List.of(16, 64, 256);
 
-    private void calculate(List<Integer> threadsNum, List<Integer> matrixSizes) {
-        for (int i = 0; i < threadsNum.size(); i++) {
-            for (int j = 0; j < matrixSizes.size(); j++) {
-                FoxMatrixMultiplying foxMatrixMultiplying = new FoxMatrixMultiplying(threadsNum.get(i));
-                int[][] firstMatrix = generateMatrix(matrixSizes.get(j));
-                int[][] secondMatrix = generateMatrix(matrixSizes.get(j));
+    private void calculate(List<Integer> threadNums, List<Integer> matrixSizes) {
+        CSVWriter csvWriter;
+        try {
+            csvWriter = new CSVWriter(new FileWriter("results.csv"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Integer threadNum : threadNums) {
+            for (Integer matrixSize : matrixSizes) {
+                FoxMatrixMultiplying foxMatrixMultiplying = new FoxMatrixMultiplying(threadNum);
+                int[][] firstMatrix = generateMatrix(matrixSize);
+                int[][] secondMatrix = generateMatrix(matrixSize);
                 double time = calcSecondTime(() ->
                         foxMatrixMultiplying.multiply(firstMatrix, secondMatrix));
-
+                ResultsBean resultsBean = new ResultsBean(ResultsBean.MultiplyingType.FOX, threadNum, matrixSize, calcSpeedup(1, time));
+                StatefulBeanToCsv<ResultsBean> converter = new StatefulBeanToCsvBuilder<ResultsBean>(csvWriter)
+                        .build();
+                try {
+                    converter.write(resultsBean);
+                } catch (CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
+                    throw new RuntimeException(e);
+                }
             }
+        }
+        try {
+            csvWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -34,10 +56,6 @@ public class MatrixMultiplyBenchMark {
         runnable.run();
         long afterTime = System.currentTimeMillis();
         return (afterTime - time) / 1000d;
-    }
-
-    public void writeCsv() {
-
     }
 
     private int[][] generateMatrix(int matrixSize) {
@@ -52,5 +70,10 @@ public class MatrixMultiplyBenchMark {
 
     public double calcSpeedup(double sequential, double parallel) {
         return sequential / parallel;
+    }
+
+    public static void main(String[] args) {
+        MatrixMultiplyBenchMark matrixMultiplyBenchMark = new MatrixMultiplyBenchMark();
+        matrixMultiplyBenchMark.calculate(MatrixMultiplyBenchMark.threadsNum, MatrixMultiplyBenchMark.matrixSizes);
     }
 }
