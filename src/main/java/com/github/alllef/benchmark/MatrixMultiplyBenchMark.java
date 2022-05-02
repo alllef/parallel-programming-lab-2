@@ -1,62 +1,66 @@
 package com.github.alllef.benchmark;
 
+import com.github.alllef.algorithm.MatrixMultiplying;
+import com.github.alllef.algorithm.SimpleMatrixMultiplying;
 import com.github.alllef.algorithm.fox_algo.FoxMatrixMultiplying;
+import com.github.alllef.algorithm.striped_algo.StripedBlockMatrixMultiplying;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Stream;
 
 public class MatrixMultiplyBenchMark {
     private static List<Integer> threadsNum = List.of(4, 16);
     private static List<Integer> matrixSizes = List.of(16, 64, 256);
 
     private void calculate(List<Integer> threadNums, List<Integer> matrixSizes) {
-        CSVWriter csvWriter;
-        try {
-            csvWriter = new CSVWriter(new FileWriter("results.csv"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        try (CSVWriter csvWriter = new CSVWriter(new FileWriter("results.csv"))) {
+            StatefulBeanToCsv<ResultsBean> converter = new StatefulBeanToCsvBuilder<ResultsBean>(csvWriter)
+                    .build();
 
-        StatefulBeanToCsv<ResultsBean> converter = new StatefulBeanToCsvBuilder<ResultsBean>(csvWriter)
-                .build();
-        for (Integer threadNum : threadNums) {
             for (Integer matrixSize : matrixSizes) {
-                FoxMatrixMultiplying foxMatrixMultiplying = new FoxMatrixMultiplying(threadNum);
-                int[][] firstMatrix = generateMatrix(matrixSize);
-                int[][] secondMatrix = generateMatrix(matrixSize);
-                double time = calcSecondTime(() ->
-                        foxMatrixMultiplying.multiply(firstMatrix, secondMatrix));
-                ResultsBean resultsBean = new ResultsBean(ResultsBean.MultiplyingType.FOX, threadNum, matrixSize, calcSpeedup(1, time));
-
-                try {
-                    converter.write(resultsBean);
-                } catch (CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
-                    throw new RuntimeException(e);
+                ResultsBean serialBean = writeAndGetResults(converter, ResultsBean.MultiplyingType.SERIAL, new SimpleMatrixMultiplying(), matrixSize, 1, 1);
+                for (Integer threadNum : threadNums) {
+                    writeAndGetResults(converter, ResultsBean.MultiplyingType.FOX, new FoxMatrixMultiplying(threadNum), matrixSize, threadNum,serialBean.getTimeInMillisSeconds());
+                    writeAndGetResults(converter, ResultsBean.MultiplyingType.STRIPED, new StripedBlockMatrixMultiplying(threadNum), matrixSize, threadNum,serialBean.getTimeInMillisSeconds());
                 }
+
             }
-        }
-        try {
-            csvWriter.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+    }
+
+    private ResultsBean writeAndGetResults(StatefulBeanToCsv<ResultsBean> converter, ResultsBean.MultiplyingType type, MatrixMultiplying matrixMultiplying, int matrixSize, int threadNum, double serialResult) {
+        int[][] firstMatrix = generateMatrix(matrixSize);
+        int[][] secondMatrix = generateMatrix(matrixSize);
+        double time = calcSecondTime(() ->
+                matrixMultiplying.multiply(firstMatrix, secondMatrix));
+        if (threadNum == 1)
+            serialResult = time;
+
+        ResultsBean resultsBean = new ResultsBean(type, threadNum, matrixSize, time, calcSpeedup(serialResult, time));
+
+        try {
+            converter.write(resultsBean);
+        } catch (CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
+            e.printStackTrace();
+        }
+        return resultsBean;
     }
 
     public double calcSecondTime(Runnable runnable) {
         long time = System.currentTimeMillis();
         runnable.run();
         long afterTime = System.currentTimeMillis();
-        return (afterTime - time) / 1000d;
+        return (afterTime - time);
     }
 
     private int[][] generateMatrix(int matrixSize) {
@@ -70,7 +74,7 @@ public class MatrixMultiplyBenchMark {
     }
 
     public double calcSpeedup(double sequential, double parallel) {
-        return sequential / parallel;
+        return parallel/sequential;
     }
 
     public static void main(String[] args) {

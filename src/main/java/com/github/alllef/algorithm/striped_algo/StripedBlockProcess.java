@@ -27,7 +27,6 @@ public class StripedBlockProcess implements Runnable {
             for (int currCol = 0; currCol < columnNum; currCol++) {
                 resultMatr[subTaskNum][currSecondMatrCol] += firstMatrRow[currCol] * secondMatr[currCol][currSecondMatrCol];
             }
-            System.out.println(subTaskNum+" "+currSecondMatrCol);
         }
     }
 }

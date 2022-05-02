@@ -5,16 +5,18 @@ public class ResultsBean {
         FOX, STRIPED, SERIAL
     }
 
-    MultiplyingType multiplyingType;
+    private MultiplyingType multiplyingType;
     private int threadsNumber;
     private int matrixSize;
+    private double timeInMillisSeconds;
     private double speedup;
 
-    public ResultsBean(MultiplyingType multiplyingType, int threadsNumber, int matrixSize, double speedup) {
+    public ResultsBean(MultiplyingType multiplyingType, int threadsNumber, int matrixSize, double timeInSeconds, double speedup) {
         this.multiplyingType = multiplyingType;
         this.threadsNumber = threadsNumber;
         this.matrixSize = matrixSize;
         this.speedup = speedup;
+        this.timeInMillisSeconds = timeInSeconds;
     }
 
     public MultiplyingType getMultiplyingType() {
@@ -47,5 +49,13 @@ public class ResultsBean {
 
     public void setSpeedup(double speedup) {
         this.speedup = speedup;
+    }
+
+    public double getTimeInMillisSeconds() {
+        return timeInMillisSeconds;
+    }
+
+    public void setTimeInMillisSeconds(double timeInMillisSeconds) {
+        this.timeInMillisSeconds = timeInMillisSeconds;
     }
 }
