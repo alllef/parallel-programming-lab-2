@@ -27,6 +27,8 @@ public class MatrixMultiplyBenchMark {
             throw new RuntimeException(e);
         }
 
+        StatefulBeanToCsv<ResultsBean> converter = new StatefulBeanToCsvBuilder<ResultsBean>(csvWriter)
+                .build();
         for (Integer threadNum : threadNums) {
             for (Integer matrixSize : matrixSizes) {
                 FoxMatrixMultiplying foxMatrixMultiplying = new FoxMatrixMultiplying(threadNum);
@@ -35,8 +37,7 @@ public class MatrixMultiplyBenchMark {
                 double time = calcSecondTime(() ->
                         foxMatrixMultiplying.multiply(firstMatrix, secondMatrix));
                 ResultsBean resultsBean = new ResultsBean(ResultsBean.MultiplyingType.FOX, threadNum, matrixSize, calcSpeedup(1, time));
-                StatefulBeanToCsv<ResultsBean> converter = new StatefulBeanToCsvBuilder<ResultsBean>(csvWriter)
-                        .build();
+
                 try {
                     converter.write(resultsBean);
                 } catch (CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {

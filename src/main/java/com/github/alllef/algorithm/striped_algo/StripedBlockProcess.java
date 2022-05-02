@@ -1,12 +1,12 @@
 package com.github.alllef.algorithm.striped_algo;
 
-public class StripedBlockThread extends Thread {
+public class StripedBlockProcess implements Runnable {
     private final int subTaskNum;
     private final int[] firstMatrRow;
     private final int[][] secondMatr;
     private final int[][] resultMatr;
 
-    public StripedBlockThread(int subTaskNum, int[] firstMatrRow, int[][] secondMatr, int[][] resultMatr) {
+    public StripedBlockProcess(int subTaskNum, int[] firstMatrRow, int[][] secondMatr, int[][] resultMatr) {
         super();
         this.subTaskNum = subTaskNum;
         this.firstMatrRow = firstMatrRow;
@@ -24,8 +24,10 @@ public class StripedBlockThread extends Thread {
             if (currSecondMatrCol < 0)
                 currSecondMatrCol = iterNum - (-currSecondMatrCol);
 
-            for (int currCol = 0; currCol < columnNum; currCol++)
+            for (int currCol = 0; currCol < columnNum; currCol++) {
                 resultMatr[subTaskNum][currSecondMatrCol] += firstMatrRow[currCol] * secondMatr[currCol][currSecondMatrCol];
+            }
+            System.out.println(subTaskNum+" "+currSecondMatrCol);
         }
     }
 }
