@@ -1,5 +1,6 @@
 package com.github.alllef.benchmark;
 
+import com.github.alllef.MatrixUtils;
 import com.github.alllef.algorithm.MatrixMultiplying;
 import com.github.alllef.algorithm.SimpleMatrixMultiplying;
 import com.github.alllef.algorithm.fox_algo.FoxMatrixMultiplying;
@@ -17,7 +18,7 @@ import java.util.Random;
 
 public class MatrixMultiplyBenchMark {
     private static List<Integer> threadsNum = List.of(4, 16);
-    private static List<Integer> matrixSizes = List.of(16, 64, 256);
+    private static List<Integer> matrixSizes = List.of(512,1024,2048);
 
     private void calculate(List<Integer> threadNums, List<Integer> matrixSizes) {
         try (CSVWriter csvWriter = new CSVWriter(new FileWriter("results.csv"))) {
@@ -39,8 +40,8 @@ public class MatrixMultiplyBenchMark {
     }
 
     private ResultsBean writeAndGetResults(StatefulBeanToCsv<ResultsBean> converter, ResultsBean.MultiplyingType type, MatrixMultiplying matrixMultiplying, int matrixSize, int threadNum, double serialResult) {
-        int[][] firstMatrix = generateMatrix(matrixSize);
-        int[][] secondMatrix = generateMatrix(matrixSize);
+        int[][] firstMatrix = MatrixUtils.generateMatrix(matrixSize);
+        int[][] secondMatrix = MatrixUtils.generateMatrix(matrixSize);
         double time = calcSecondTime(() ->
                 matrixMultiplying.multiply(firstMatrix, secondMatrix));
         if (threadNum == 1)
@@ -63,18 +64,10 @@ public class MatrixMultiplyBenchMark {
         return (afterTime - time);
     }
 
-    private int[][] generateMatrix(int matrixSize) {
-        int[][] matrix = new int[matrixSize][matrixSize];
-        for (int i = 0; i < matrixSize; i++) {
-            for (int j = 0; j < matrixSize; j++) {
-                matrix[i][j] = new Random().nextInt(10);
-            }
-        }
-        return matrix;
-    }
+
 
     public double calcSpeedup(double sequential, double parallel) {
-        return parallel/sequential;
+        return sequential/parallel;
     }
 
     public static void main(String[] args) {

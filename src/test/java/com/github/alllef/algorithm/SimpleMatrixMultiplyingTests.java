@@ -12,15 +12,19 @@ import static com.github.alllef.algorithm.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class SimpleMatrixMultiplyingTests extends MatrixMultiplyingTests{
+public class SimpleMatrixMultiplyingTests {
 
-    @Override
-    protected MatrixMultiplying getMatrixMultiplying() {
-        return new SimpleMatrixMultiplying();
+    @ParameterizedTest
+    @MethodSource("matrProvider")
+    void multiplyTest(int[][] firstMatr, int[][] secondMatr, int[][] expectedResultMatr) {
+        MatrixMultiplying matrixMultiplying = new SimpleMatrixMultiplying();
+        int[][] actualResultMatr = matrixMultiplying.multiply(firstMatr, secondMatr);
+
+        for (int i = 0; i < actualResultMatr.length; i++)
+            assertArrayEquals(expectedResultMatr[i], actualResultMatr[i]);
     }
 
-    @Override
-    protected Stream<Arguments> matrProvider() {
+    static Stream<Arguments> matrProvider() {
         return Stream.of(
                 arguments(
                         parseToMatr(new int[]{5, 6, 2, 1, 3, 4, 6, 7, 8}, 3, 3),

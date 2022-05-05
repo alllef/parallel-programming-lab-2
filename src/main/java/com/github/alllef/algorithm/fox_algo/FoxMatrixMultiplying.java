@@ -3,7 +3,9 @@ package com.github.alllef.algorithm.fox_algo;
 import com.github.alllef.algorithm.MatrixMultiplying;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FoxMatrixMultiplying implements MatrixMultiplying {
     private final int processesNum;
@@ -20,7 +22,7 @@ public class FoxMatrixMultiplying implements MatrixMultiplying {
         int subMatrSize = matrSize / iterNum;
         Counter counter = new Counter(processesNum);
 
-        List<FoxProcess> processes = startAndGetProcesses(iterNum,counter);
+        List<FoxProcess> processes = startAndGetProcesses(iterNum, counter);
 
         for (int iter = 0; iter < iterNum; iter++) {
             for (int process = 0; process < processes.size(); process++) {
